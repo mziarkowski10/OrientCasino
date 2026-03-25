@@ -6,6 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
+<div id="authModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h2 id="modalTitle">Logowanie</h2>
+    <form id="authForm">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Hasło" required>
+      <button type="submit" class="btn primary big" id="submitAuth">Zaloguj się</button>
+    </form>
+    <p id="toggleText">Nie masz konta? <a href="#" id="switchToRegister">Zarejestruj się</a></p>
+  </div>
+</div>
 <body>
 
 <header class="topbar">
