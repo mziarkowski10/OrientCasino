@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint
-from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, add_history, get_player_by_id, player_exists_by_id
+from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, add_history, get_player_by_id, player_exists_by_id,verify_login
 import random
 
 
@@ -7,51 +7,41 @@ routes = Blueprint("routes", __name__)
 
 @routes.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
+    data = request.json
     username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
 
-    if player_exists(username):
-        return jsonify({
-            "success": False,
-            "message": "Username already taken",
-            "username": username
-        })
+    if not username or not password or not email:
+        return jsonify({"success": False, "message": "Wypełnij wszystkie pola"}), 400
 
-    if not username:
-        return jsonify({
-            "success": False,
-            "message": "Username is required"
-        })
+    result = add_player(username, email, password)
 
-    add_player(username)
+    if result["success"]:
+        return jsonify({"success": True, "message": "Gracz zarejestrowany", "player_id": result["player_id"]})
+    else:
+        return jsonify({"success": False, "message": result["message"]})
 
-    return jsonify({
-        "success": True,
-        "message": "Player registered successfully",
-        "player": {
-            "username": username,
-            "balance": get_player(username).get("balance"),
-            "created_at": get_player(username).get("created_at")
-        }
-    })
 
 @routes.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data = request.json
     username = data.get("username")
+    password = data.get("password")
 
-    if not player_exists(username):
-        return jsonify({
-            "success": False,
-            "message": "Player not found",
-            "username": username
-        })
+    if not username or not password:
+        return jsonify({"success": False, "message": "Wypełnij wszystkie pola"}), 400
 
-    user_data = get_player(username)
-    user_data["success"] = True
-    user_data["message"] = "Login successful"
+    player = verify_login(username, password)
 
-    return jsonify(user_data)
+    if not player:
+        return jsonify({"success": False, "message": "Niepoprawna nazwa użytkownika lub hasło"}), 401
+
+    return jsonify({
+        "success": True,
+        "message": "Zalogowano!",
+        "player_id": player["player_id"]
+    })
 
 @routes.route("/update_balance", methods=["POST"])
 def update_balance():
@@ -155,3 +145,4 @@ def history():
             "message": "Player does not exist",
             "player_id": player_id
         })
+
