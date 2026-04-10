@@ -1,4 +1,6 @@
 import sqlite3
+
+
 def connect_db():
     con = sqlite3.connect("backend/data/casino.db")
     cur = con.cursor()
@@ -92,17 +94,15 @@ def get_player(username):
 
 
 def verify_login(username, password):
-   
     player = get_player(username)
+
     if not player:
-        print(f"Brak gracza: {username}")  # debug
+        print(f"Brak gracza: {username}")
         return None
 
-    # usuń ewentualne spacje po obu stronach
     db_password = str(player["password"]).strip()
     input_password = str(password).strip()
-    
-    print(f"Baza: '{db_password}' | Podane: '{input_password}'")  # debug
+    print(f"Baza: '{db_password}' | Podane: '{input_password}'")
 
     if db_password != input_password:
         return None
@@ -174,7 +174,6 @@ def clear_players():
     cur.execute("DELETE FROM player")
     con.commit()
     con.close()
-
 
 
 def add_history(player_id, game, bet, result_amount, final_balance):

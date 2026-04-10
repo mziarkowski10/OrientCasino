@@ -4,12 +4,12 @@ from backend.routes import routes
 from backend.db import create_db
 import os
 
-app = Flask(__name__, static_folder="../frontend")  # wskaż folder frontend
+
+app = Flask(__name__, static_folder="../frontend")
 CORS(app)
 
 create_db()
 app.register_blueprint(routes)
-
 
 @app.route("/")
 def serve_index():

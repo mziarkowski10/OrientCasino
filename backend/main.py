@@ -4,12 +4,10 @@ import random
 
 app = FastAPI()
 
-# 🔹 Fake baza użytkowników
 users = {
     "test": {"balance": 1000}
 }
 
-# 📦 MODELE
 
 class BetRequest(BaseModel):
     user: str
@@ -18,7 +16,7 @@ class BetRequest(BaseModel):
 class CoinflipRequest(BaseModel):
     user: str
     amount: float
-    choice: str  # "heads" | "tails"
+    choice: str"
 
 class MinesRequest(BaseModel):
     user: str
@@ -26,15 +24,14 @@ class MinesRequest(BaseModel):
     mines: int
 
 
-# 💰 GET BALANCE
 @app.get("/api/balance/{user}")
 def get_balance(user: str):
     if user not in users:
         raise HTTPException(status_code=404, detail="User not found")
+
     return {"balance": users[user]["balance"]}
 
 
-# 💸 POST BET
 @app.post("/api/bet")
 def place_bet(data: BetRequest):
     if data.user not in users:
@@ -54,7 +51,6 @@ def place_bet(data: BetRequest):
     }
 
 
-# 🎲 COINFLIP
 @app.post("/api/coinflip")
 def coinflip(data: CoinflipRequest):
     if data.user not in users:
@@ -82,7 +78,6 @@ def coinflip(data: CoinflipRequest):
     }
 
 
-# 💣 MINES
 @app.post("/api/mines/start")
 def start_mines(data: MinesRequest):
     if data.user not in users:
