@@ -2,12 +2,12 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import random
 
+
 app = FastAPI()
 
 users = {
     "test": {"balance": 1000}
 }
-
 
 class BetRequest(BaseModel):
     user: str
@@ -16,16 +16,15 @@ class BetRequest(BaseModel):
 class CoinflipRequest(BaseModel):
     user: str
     amount: float
-    choice: str"
+    choice: str
 
 class MinesRequest(BaseModel):
     user: str
     bet: float
     mines: int
 
-
 @app.get("/api/balance/{user}")
-def get_balance(user: str):
+def get_balance(user):
     if user not in users:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -33,7 +32,7 @@ def get_balance(user: str):
 
 
 @app.post("/api/bet")
-def place_bet(data: BetRequest):
+def place_bet(data):
     if data.user not in users:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -52,7 +51,7 @@ def place_bet(data: BetRequest):
 
 
 @app.post("/api/coinflip")
-def coinflip(data: CoinflipRequest):
+def coinflip(data):
     if data.user not in users:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -79,7 +78,7 @@ def coinflip(data: CoinflipRequest):
 
 
 @app.post("/api/mines/start")
-def start_mines(data: MinesRequest):
+def start_mines(data):
     if data.user not in users:
         raise HTTPException(status_code=404, detail="User not found")
 

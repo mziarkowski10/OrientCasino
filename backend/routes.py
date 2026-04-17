@@ -8,141 +8,142 @@ routes = Blueprint("routes", __name__)
 @routes.route("/register", methods=["POST"])
 def register():
     data = request.json
-    username = data.get("username")
-    email = data.get("email")
-    password = data.get("password")
 
-    if not username or not password or not email:
-        return jsonify({"success": False, "message": "Wypełnij wszystkie pola"}), 400
+    if not data:
+        return jsonify({"success": False, "message": "INVALID_REQUEST"}), 400
+
+    username = data.get("username", "").strip()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+    allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+    #Username check
+    if len(username) > 20 or len(username) < 3:
+        return jsonify({"success": False, "message": "USERNAME_LENGTH_INVALID"}), 400
+    
+    for char in username:
+        if char not in allowed:
+            return jsonify({"success": False, "message": "USERNAME_INVALID_CHARACTERS"}), 400
+
+    #Email check
+    if not email:
+        return jsonify({"success": False, "message": "EMAIL_REQUIRED"}), 400
+        
+    if email.count("@") != 1:
+        return jsonify({"success": False, "message": "EMAIL_INVALID_FORMAT"}), 400
+    
+    if " " in email:
+        return jsonify({"success": False, "message": "EMAIL_CONTAINS_SPACES"}), 400
+
+    #Password check
+    if len(password) > 64 or len(password) < 8:
+        return jsonify({"success": False, "message": "PASSWORD_LENGTH_INVALID"}), 400
+
+    if not (any(char.islower() for char in password) and
+        any(char.isupper() for char in password) and
+        any(char.isdigit() for char in password) and
+        any(not char.isalnum() for char in password)):
+        return jsonify({"success": False, "message": "PASSWORD_TOO_WEAK"}), 400
 
     result = add_player(username, email, password)
 
     if result["success"]:
-        return jsonify({"success": True, "message": "Gracz zarejestrowany", "player_id": result["player_id"]})
+        return jsonify({"success": True, "message": result["message"], "player_id": result["player_id"]}), 201
     else:
-        return jsonify({"success": False, "message": result["message"]})
-
+        return jsonify({"success": False, "message": result["message"]}), 409
 
 @routes.route("/login", methods=["POST"])
 def login():
     data = request.json
-    username = data.get("username")
-    password = data.get("password")
+
+    if not data:
+        return jsonify({"success": False, "message": "INVALID_REQUEST"}), 400
+
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
 
     if not username or not password:
-        return jsonify({"success": False, "message": "Wypełnij wszystkie pola"}), 400
+        return jsonify({"success": False, "message": "MISSING_CREDENTIALS"}), 400
 
-    player = verify_login(username, password)
+    player_data = verify_login(username, password)
 
-    if not player:
-        return jsonify({"success": False, "message": "Niepoprawna nazwa użytkownika lub hasło"}), 401
+    if not player_data:
+        return jsonify({"success": False, "message": "INVALID_CREDENTIALS"}), 401
 
     return jsonify({
         "success": True,
-        "message": "Zalogowano!",
-        "player_id": player["player_id"]
+        "message": "LOGIN_SUCCESS",
+        "player_id": player_data["player"]["player_id"]
     })
 
 @routes.route("/update_balance", methods=["POST"])
 def update_balance():
-    data = request.get_json()
-    username, amount = data.get("username"), data.get("amount")
+    data = request.json
+
+    if not data:
+        return jsonify({"success": False, "message": "INVALID_REQUEST"}), 400
+
+    username = data.get("username", "").strip()
+    amount = data.get("amount")
+
+    if not username:
+        return jsonify({"success": False, "message": "MISSING_USERNAME"}), 400
+
+    if not isinstance(amount, (int, float)) or amount == 0:
+        return jsonify({"success": False, "message": "INVALID_AMOUNT"}), 400
 
     if not player_exists(username):
         return jsonify({
             "success": False,
-            "message": "Player does not exist",
-            "username": username
-        })
+            "message": "PLAYER_NOT_FOUND"
+        }), 404
 
     res = change_balance(username, amount)
 
-    return jsonify(res)
+    return jsonify(res), 200
 
 @routes.route("/balance", methods=["POST"])
 def balance():
-    data = request.get_json()
-    username = data.get("username")
+    data = request.json
+
+    if not data:
+        return jsonify({"success": False, "message": "INVALID_REQUEST"}), 400
+
+    username = data.get("username", "").strip()
+
+    if not username:
+        return jsonify({"success": False, "message": "MISSING_USERNAME"}), 400
 
     if not player_exists(username):
         return jsonify({
             "success": False,
-            "message": "Player does not exist",
-            "username": username
-        })
+            "message": "PLAYER_NOT_FOUND"
+        }), 404
 
     user_data = get_player(username)
     balance = user_data.get("balance")
 
     return jsonify({
         "success": True,
-        "username": username,
         "balance": balance
-    })
-
-@routes.route("/spin", methods=["POST"])
-def spin():
-    data = request.get_json()
-    username, bet = data.get("username"), data.get("bet")
-    user_data = get_player(username)
-    pid, balance = user_data.get("player_id"), user_data.get("balance")
-
-    if not player_exists(username):
-        return jsonify({
-            "success": False,
-            "message": "Player does not exist",
-            "username": username
-        })
-
-    if bet > balance:
-        return jsonify({
-            "success": False,
-            "message": "Not enough balance",
-            "balance": balance,
-            "bet": bet
-        })
-
-    result = [random.choice(["🍒", "🍋", "⭐", "🔔", "💎"]) for i in range(3)]
-    multiplier = 0
-    multipliers_triple = {"🍒": 2, "🍋": 3, "⭐": 5, "🔔": 7, "💎": 10}
-    multipliers_pair = {"🍒": 1.5, "🍋": 2, "⭐": 3, "🔔": 4, "💎": 5}
-
-    if result[0] == result[1] == result[2]:
-        multiplier = multipliers_triple[result[0]]
-    elif result[0] == result[1] or result[0] == result[2]:
-        multiplier = multipliers_pair[result[0]]
-    elif result[1] == result[2]:
-        multiplier = multipliers_pair[result[1]]
-
-    win = bet * multiplier
-
-    if multiplier == 0:
-        win_amount = -bet
-        balance += win_amount
-    else:
-        win_amount = win - bet
-        balance += win_amount
-
-    change_balance(username, win_amount)
-    add_history(pid, "spin", bet, win, balance)
-
-    return jsonify({
-        "success": True,
-        "username": username,
-        "result": result,
-        "bet": bet,
-        "win_amount": win_amount,
-        "balance": balance
-    })
+    }), 200
 
 @routes.route("/history", methods=["GET"])
 def history():
     player_id = request.args.get("player_id")
     
+    try:
+        player_id = int(player_id)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "INVALID_PLAYER_ID"}), 400
+
     if not player_exists_by_id(player_id):
         return jsonify({
             "success": False,
-            "message": "Player does not exist",
-            "player_id": player_id
-        })
+            "message": "PLAYER_NOT_FOUND"
+        }), 404
 
+    history_data = get_history(player_id)
+    history = history_data.get("history", [])
+
+    return jsonify({"success": True, "history": history}), 200
