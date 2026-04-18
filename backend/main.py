@@ -30,7 +30,6 @@ def get_balance(user):
 
     return {"balance": users[user]["balance"]}
 
-
 @app.post("/api/bet")
 def place_bet(data):
     if data.user not in users:
@@ -48,7 +47,6 @@ def place_bet(data):
         "success": True,
         "balance": users[data.user]["balance"]
     }
-
 
 @app.post("/api/coinflip")
 def coinflip(data):
@@ -75,7 +73,6 @@ def coinflip(data):
         "result": result,
         "balance": users[data.user]["balance"]
     }
-
 
 @app.post("/api/mines/start")
 def start_mines(data):

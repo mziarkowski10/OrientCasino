@@ -147,3 +147,42 @@ def history():
     history = history_data.get("history", [])
 
     return jsonify({"success": True, "history": history}), 200
+
+@routes.route("/slots", methods=["POST"])
+def slots():
+    data = request.json
+
+    if not data:
+        return jsonify({"success": False, "message": "INVALID_REQUEST"}), 400
+
+    username = data.get("username", "").strip()
+    bet = data.get("bet", -1)
+
+    if not isinstance(username, str) or not username:
+        return jsonify({"success": False, "message": "INVALID_USERNAME"}), 400
+
+    if not player_exists(username):
+        return jsonify({"success": False, "message": "PLAYER_NOT_FOUND"}), 404
+
+    balance = get_player(username).get("balance", -1)
+
+    if balance == -1:
+        return jsonify({"success": False, "message": "INVALID_BALANCE"}), 400
+
+    if not isinstance(bet, (int, float)) or bet <= 0 or bet > balance:
+        return jsonify({"success": False, "message": "INVALID_BET"}), 400
+
+    result = [random.randint(1, 4) for i in range(3)]
+
+    if result[0] == result[1] == result[2]:
+        multipliers = {1: 2, 2: 3, 3: 4, 4: 5}
+        win = multipliers[result[0]] * bet
+    else:
+        win = 0
+
+    result_amount = win - bet
+
+    change_balance(username, result_amount)
+    balance = get_player(username).get("balance")
+
+    return jsonify({"success": True, "result": result, "win": win, "balance": balance})

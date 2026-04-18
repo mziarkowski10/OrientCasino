@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Slots - Orient Casino</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="icon" href="static/assets/favicon_main_page.png">
+
+  <style>
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #balanceDisplay {
+      font-weight: bold;
+      color: #00f5ff;
+    }
+
+    .slots-container {
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .slots {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 40px 0;
+    }
+
+    .slot {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(145deg, #2b0052, #140022);
+      border-radius: 16px;
+      font-size: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 15px #000;
+      transition: 0.3s;
+    }
+
+    .slot.win {
+      box-shadow: 0 0 25px #00f5ff;
+      transform: scale(1.1);
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      margin-right: 10px;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .win-text { color: #00ff9f; }
+    .lose-text { color: #ff4d6d; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">🎰 OrientCasino</div>
+  <div id="balanceDisplay">Saldo: ...</div>
+</header>
+
+<div class="slots-container">
+  <h1>🎰 SLOTY</h1>
+
+  <div class="slots">
+    <div class="slot" id="slot1">❔</div>
+    <div class="slot" id="slot2">❔</div>
+    <div class="slot" id="slot3">❔</div>
+  </div>
+
+  <div class="controls">
+    <input type="number" id="bet" placeholder="Kwota" min="1">
+    <button class="btn primary" id="spinBtn">SPIN</button>
+  </div>
+
+  <div class="result" id="resultText"></div>
+</div>
+
+<script>
+const API_URL = "";
+
+const username = localStorage.getItem("username");
+if (!username) {
+  window.location.href = "login.html";
+}
+
+const symbolMap = {
+  1: "🍒",
+  2: "🍋",
+  3: "💎",
+  4: "7️⃣"
+};
+
+const slotEls = [
+  document.getElementById("slot1"),
+  document.getElementById("slot2"),
+  document.getElementById("slot3")
+];
+
+const spinBtn = document.getElementById("spinBtn");
+const resultText = document.getElementById("resultText");
+const balanceDisplay = document.getElementById("balanceDisplay");
+
+let spinning = false;
+
+async function loadBalance() {
+  try {
+    const res = await fetch(`${API_URL}/balance`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ username })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      balanceDisplay.textContent = `Saldo: ${data.balance}`;
+    } else {
+      balanceDisplay.textContent = "Saldo: błąd";
+    }
+  } catch {
+    balanceDisplay.textContent = "Saldo: błąd";
+  }
+}
+
+function fakeSpin() {
+  const symbols = ["🍒", "🍋", "💎", "7️⃣"];
+  return setInterval(() => {
+    slotEls.forEach(el => {
+      el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    });
+  }, 100);
+}
+
+spinBtn.addEventListener("click", async () => {
+  if (spinning) return;
+
+  const bet = Number(document.getElementById("bet").value);
+
+  if (!bet || bet <= 0) {
+    resultText.textContent = "Podaj poprawną kwotę";
+    resultText.className = "result lose-text";
+    return;
+  }
+
+  spinning = true;
+  spinBtn.disabled = true;
+
+  resultText.textContent = "";
+  slotEls.forEach(el => el.classList.remove("win"));
+
+  const spinAnim = fakeSpin();
+
+  try {
+    const res = await fetch(`${API_URL}/slots`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ username, bet })
+    });
+
+    const data = await res.json();
+    console.log(data);
+
+    if (!data.success) {
+      clearInterval(spinAnim);
+
+      resultText.textContent = data.message || "Błąd";
+      resultText.className = "result lose-text";
+
+      spinning = false;
+      spinBtn.disabled = false;
+      return;
+    }
+
+    setTimeout(() => {
+      clearInterval(spinAnim);
+
+      slotEls.forEach((el, i) => {
+        el.textContent = symbolMap[data.result[i]];
+      });
+
+      if (data.win > 0) {
+        resultText.textContent = `WYGRANA: +${data.win}`;
+        resultText.className = "result win-text";
+        slotEls.forEach(el => el.classList.add("win"));
+      } else {
+        resultText.textContent = "Przegrana";
+        resultText.className = "result lose-text";
+      }
+
+      balanceDisplay.textContent = `Saldo: ${data.balance}`;
+
+      spinning = false;
+      spinBtn.disabled = false;
+
+    }, 1200);
+
+  } catch {
+    clearInterval(spinAnim);
+
+    resultText.textContent = "Błąd połączenia";
+    resultText.className = "result lose-text";
+
+    spinning = false;
+    spinBtn.disabled = false;
+  }
+});
+
+loadBalance();
+</script>
+
+</body>
+</html>

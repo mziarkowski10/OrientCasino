@@ -1,4 +1,4 @@
-window.addEventListener("load", () => {
+document.addEventListener("DOMContentLoaded", () => {
   const img = document.getElementById("heroImg");
   if (!img) return;
 

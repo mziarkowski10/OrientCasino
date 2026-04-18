@@ -105,7 +105,7 @@ def verify_login(username, password):
             "message": "Password is not correct"
         }
 
-    player_safe = dict(player)
+    player_safe = player
     player_safe.pop("password", None)
 
     return {
