@@ -1,4 +1,5 @@
 import sqlite3
+import json
 
 
 def connect_db():
@@ -24,7 +25,9 @@ def create_db():
         id INTEGER PRIMARY KEY,
         player_id INTEGER NOT NULL,
         game TEXT NOT NULL,
+        result TEXT,
         bet REAL NOT NULL,
+        win REAL NOT NULL,
         result_amount REAL NOT NULL,
         final_balance REAL NOT NULL,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -105,7 +108,7 @@ def verify_login(username, password):
             "message": "Password is not correct"
         }
 
-    player_safe = player
+    player_safe = dict(player)
     player_safe.pop("password", None)
 
     return {
@@ -187,10 +190,10 @@ def clear_players():
     con.commit()
     con.close()
 
-def add_history(player_id, game, bet, result_amount, final_balance):
+def add_history(player_id, game, result, bet, win, result_amount, final_balance):
     con, cur = connect_db()
 
-    if not isinstance(player_id, int) or not isinstance(game, str) or not isinstance(bet, (int, float)) or not isinstance(result_amount, (int, float)) or not isinstance(final_balance, (int, float)) or not game.strip():
+    if not isinstance(player_id, int) or not isinstance(game, str) or not isinstance(result, list) or not isinstance(bet, (int, float)) or not isinstance(win, (int, float)) or not isinstance(result_amount, (int, float)) or not isinstance(final_balance, (int, float)) or not game.strip():
         con.close()
         return {
             "success": False,
@@ -198,8 +201,8 @@ def add_history(player_id, game, bet, result_amount, final_balance):
         }
 
     cur.execute(
-        "INSERT INTO history(player_id, game, bet, result_amount, final_balance) VALUES(?, ?, ?, ?, ?)",
-        (player_id, game, bet, result_amount, final_balance)
+        "INSERT INTO history(player_id, game, result, bet, win, result_amount, final_balance) VALUES(?, ?, ?, ?, ?, ?, ?)",
+        (player_id, game, json.dumps(result), bet, win, result_amount, final_balance)
     )
 
     con.commit()
@@ -216,15 +219,17 @@ def get_history(player_id):
     rows = cur.fetchall()
     con.close()
 
-    result = []
+    result_history = []
 
     for row in rows:
-        history_id, pid, game, bet, result_amount, final_balance, timestamp = row
-        result.append({
+        history_id, pid, game, result, bet, win, result_amount, final_balance, timestamp = row
+        result_history.append({
             "id": history_id,
             "player_id": pid,
             "game": game,
+            "result": json.loads(result),
             "bet": bet,
+            "win": win,
             "result_amount": result_amount,
             "final_balance": final_balance,
             "timestamp": timestamp
@@ -232,7 +237,7 @@ def get_history(player_id):
 
     return {
         "success": True,
-        "history": result
+        "history": result_history
     }
 
 def clear_history():

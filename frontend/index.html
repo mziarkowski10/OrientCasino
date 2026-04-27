@@ -10,12 +10,10 @@
 <body>
 
 <header class="topbar">
-  <div class="logo">🎰 OrientCasino</div>
+  <a href="index.html" class="logo">🎰 OrientCasino</a>
   <nav>
-    <a href="#" onclick="goToSlots()" aria-label="Slots">Slots</a>
-    <a href="#" aria-label="Live Casino">Live</a>
-    <a href="#" aria-label="Esports">Esports</a>
-    <a href="#" aria-label="VIP">VIP</a>
+    <a href="#" onclick="goToSlots()">Slots</a>
+    <a href="history.html">Historia</a>
   </nav>
   <div class="auth" id="authBox">
     <a class="btn ghost" href="login.html">Zaloguj</a>
@@ -26,21 +24,17 @@
 <section class="hero">
   <div class="hero-text">
     <h1>NOWE SLOTY<br><span>WIELKIE WYGRANE</span></h1>
-    <p>Wejdź do gry i zgarnij jackpot. Bonusy czekają.</p>
+    <p>Wejdź do gry i zgarnij jackpot.</p>
     <a href="#" onclick="goToSlots()" class="btn primary big">Zagraj teraz</a>
   </div>
 
   <div class="hero-image">
-    <img id="heroImg" src="static/assets/hero.jpg" alt="Maskotka kasyna">
+    <img id="heroImg" src="static/assets/hero.jpg">
   </div>
 </section>
 
 <section class="categories">
-  <div class="card" onclick="goToSlots()">🎰<span>Casino</span></div>
-  <div class="card">🎲<span>Live Casino</span></div>
-  <div class="card">🎮<span>Esports</span></div>
-  <div class="card">💣<span>Crash</span></div>
-  <div class="card">📺<span>TV Games</span></div>
+  <div class="card" onclick="goToSlots()">🎰<span>Slots</span></div>
   <div class="card">🎡<span>Ruletka</span></div>
 </section>
 
@@ -53,12 +47,7 @@
 <script>
 function goToSlots() {
   const username = localStorage.getItem("username");
-
-  if (!username) {
-    window.location.href = "login.html";
-  } else {
-    window.location.href = "slots_game.html";
-  }
+  window.location.href = username ? "slots_game.html" : "login.html";
 }
 
 const username = localStorage.getItem("username");

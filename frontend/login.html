@@ -12,12 +12,23 @@
       background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       color: #fff;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       height: 100vh;
       margin: 0;
     }
+
+    /* 🔥 LOGO */
+    .logo {
+      margin-top: 40px;
+      font-size: 26px;
+      font-weight: 700;
+      color: #ff3cac;
+      text-decoration: none;
+    }
+
     .auth-container {
+      margin-top: 40px;
       background: rgba(0,0,0,0.8);
       padding: 40px;
       border-radius: 15px;
@@ -25,11 +36,13 @@
       box-shadow: 0 0 20px rgba(255,255,255,0.1);
       text-align: center;
     }
+
     .auth-container h2 {
       margin-bottom: 20px;
       font-size: 28px;
       color: #00ffff;
     }
+
     .auth-container input {
       width: 100%;
       padding: 12px;
@@ -37,6 +50,7 @@
       border: none;
       border-radius: 8px;
     }
+
     .auth-container .btn {
       width: 100%;
       padding: 12px;
@@ -47,35 +61,45 @@
       font-weight: bold;
       transition: 0.3s;
     }
+
     .btn.primary {
       background: #00ffff;
       color: #000;
     }
+
     .btn.primary:hover {
       background: #00cccc;
     }
+
     .btn.ghost {
       background: transparent;
       border: 2px solid #00ffff;
       color: #00ffff;
     }
+
     .btn.ghost:hover {
       background: #00ffff;
       color: #000;
     }
+
     .toggle-btns {
       display: flex;
       justify-content: space-between;
       margin-bottom: 20px;
     }
+
     .toggle-btns button {
       flex: 1;
       margin: 0 5px;
     }
+
     .hidden { display: none; }
   </style>
 </head>
 <body>
+
+<!-- 🔥 LOGO → STRONA GŁÓWNA -->
+<a href="index.html" class="logo">🎰 OrientCasino</a>
 
 <div class="auth-container">
   <div class="toggle-btns">

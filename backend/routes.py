@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint
-from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, add_history, get_player_by_id, player_exists_by_id,verify_login
+from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, add_history, get_history, get_player_by_id, player_exists_by_id,verify_login
 import random
 
 
@@ -67,7 +67,7 @@ def login():
 
     player_data = verify_login(username, password)
 
-    if not player_data:
+    if not player_data["success"]:
         return jsonify({"success": False, "message": "INVALID_CREDENTIALS"}), 401
 
     return jsonify({
@@ -130,20 +130,24 @@ def balance():
 
 @routes.route("/history", methods=["GET"])
 def history():
-    player_id = request.args.get("player_id")
-    
-    try:
-        player_id = int(player_id)
-    except (TypeError, ValueError):
-        return jsonify({"success": False, "message": "INVALID_PLAYER_ID"}), 400
+    username = request.args.get("username", "").strip()
 
-    if not player_exists_by_id(player_id):
+    if not username:
+        return jsonify({"success": False, "message": "INVALID_USERNAME"}), 400
+
+    if not player_exists(username):
         return jsonify({
             "success": False,
             "message": "PLAYER_NOT_FOUND"
         }), 404
 
+    player_id = get_player(username).get("player_id")
+
     history_data = get_history(player_id)
+
+    if not history_data.get("success"):
+        return jsonify({"success": False, "message": "SOMETHING_WENT_WRONG"}), 500
+
     history = history_data.get("history", [])
 
     return jsonify({"success": True, "history": history}), 200
@@ -183,6 +187,14 @@ def slots():
     result_amount = win - bet
 
     change_balance(username, result_amount)
-    balance = get_player(username).get("balance")
 
-    return jsonify({"success": True, "result": result, "win": win, "balance": balance})
+    player = get_player(username)
+    balance = player.get("balance", -1)
+    player_id = player.get("player_id", -1)
+
+    history_res = add_history(player_id, "slots", result, bet, win, result_amount, balance)
+
+    if not history_res["success"]:
+        return jsonify({"success": False, "message": history_res["message"]}), 500
+
+    return jsonify({"success": True, "result": result, "win": win, "balance": balance}), 200

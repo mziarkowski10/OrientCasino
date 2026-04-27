@@ -10,7 +10,6 @@ body {
   color: #fff;
 }
 
-/* HEADER */
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -35,15 +34,14 @@ nav a:hover {
   color: #fff;
 }
 
-/* BUTTONS */
 .btn {
   padding: 10px 18px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
   font-weight: 600;
-  text-decoration: none; /* 🔧 żeby <a class="btn"> wyglądało poprawnie */
-  display: inline-block; /* 🔧 spójność z button */
+  text-decoration: none;
+  display: inline-block;
 }
 
 .btn.primary {
@@ -62,7 +60,6 @@ nav a:hover {
   font-size: 16px;
 }
 
-/* HERO */
 .hero {
   display: flex;
   justify-content: space-between;
@@ -85,7 +82,6 @@ nav a:hover {
   color: #ccc;
 }
 
-/* IMAGE ANIMATION */
 .hero-image img {
   max-width: 420px;
   opacity: 0;
@@ -100,10 +96,9 @@ nav a:hover {
 .hero-image img.show {
   opacity: 1;
   transform: translateY(0) scale(1);
-  filter: blur(0) drop-shadow(0 0 40px #ff3cac); /* 🔧 połączone filtry */
+  filter: blur(0) drop-shadow(0 0 40px #ff3cac);
 }
 
-/* CATEGORIES */
 .categories {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -132,7 +127,6 @@ nav a:hover {
   box-shadow: 0 0 25px #ff3cac66;
 }
 
-/* FOOTER */
 footer {
   text-align: center;
   padding: 30px;
@@ -140,7 +134,6 @@ footer {
   font-size: 14px;
 }
 
-/* MOBILE */
 @media (max-width: 900px) {
   .hero {
     flex-direction: column;
@@ -150,4 +143,62 @@ footer {
   .hero-image img {
     margin-top: 40px;
   }
+}
+
+.logo {
+  text-decoration: none;
+  color: #ff3cac;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.history-container {
+  margin-top: 60px;
+  padding: 20px;
+}
+
+.history-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #140022;
+}
+
+.history-table th {
+  background: #2b0052;
+  padding: 12px;
+  font-weight: bold;
+}
+
+.history-table td {
+  padding: 10px;
+  text-align: center;
+}
+
+.history-table tr {
+  transition: 0.2s;
+}
+
+.history-table tr:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.history-empty {
+  padding: 20px;
+  opacity: 0.6;
+}
+
+.win-row {
+  color: #00ff9f;
+  font-weight: bold;
+}
+
+.lose-row {
+  color: #ff4d6d;
+  font-weight: bold;
 }
