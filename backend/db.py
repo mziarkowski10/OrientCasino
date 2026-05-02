@@ -3,7 +3,7 @@ import json
 
 
 def connect_db():
-    con = sqlite3.connect("backend/data/casino.db")
+    con = sqlite3.connect("backend/instance/casino.db")
     cur = con.cursor()
     return con, cur
 
@@ -91,30 +91,6 @@ def get_player(username):
         "password": password,
         "balance": balance,
         "created_at": created_at
-    }
-
-def verify_login(username, password):
-    player = get_player(username)
-
-    if not player:
-        return {
-            "success": False,
-            "message": "Player does not exist"
-        }
-
-    if str(player["password"]).strip() != str(password).strip():
-        return {
-            "success": False,
-            "message": "Password is not correct"
-        }
-
-    player_safe = dict(player)
-    player_safe.pop("password", None)
-
-    return {
-        "success": True,
-        "message": "Password is correct",
-        "player": player_safe
     }
 
 def change_balance(username, amount):
@@ -245,3 +221,19 @@ def clear_history():
     cur.execute("DELETE FROM history")
     con.commit()
     con.close()
+
+def clear_player_history(player_id):
+    try:
+        player_id = int(player_id)
+    except:
+        return {"success": False, "message": "Player_id is not integer"}
+
+    if not player_exists_by_id(player_id):
+        return {"success": False, "message": "Player does not exist"}
+
+    con, cur = connect_db()
+    cur.execute("DELETE FROM history WHERE player_id = ?", (player_id,))
+    con.commit()
+    con.close()
+
+    return {"success": True, "message": "History removed"}

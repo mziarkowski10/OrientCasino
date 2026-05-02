@@ -4,20 +4,24 @@
   <meta charset="UTF-8">
   <title>Orient Casino</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="static/css/style.css">
-  <link rel="icon" href="static/assets/favicon_main_page.png">
+
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="/static/assets/favicon_main_page.png">
 </head>
 <body>
 
 <header class="topbar">
-  <a href="index.html" class="logo">🎰 OrientCasino</a>
+  <a href="index.html" class="logo">OrientCasino</a>
+
   <nav>
-    <a href="#" onclick="goToSlots()">Slots</a>
+    <a href="#" class="go-slots">Slots</a>
     <a href="history.html">Historia</a>
   </nav>
+
   <div class="auth" id="authBox">
-    <a class="btn ghost" href="login.html">Zaloguj</a>
-    <a class="btn primary" href="login.html">Rejestracja</a>
+    <span id="balanceDisplay">Saldo: ...</span>
+    <a class="btn ghost login-link" href="login.html">Zaloguj</a>
+    <a class="btn primary login-link" href="login.html?mode=register">Rejestracja</a>
   </div>
 </header>
 
@@ -25,47 +29,24 @@
   <div class="hero-text">
     <h1>NOWE SLOTY<br><span>WIELKIE WYGRANE</span></h1>
     <p>Wejdź do gry i zgarnij jackpot.</p>
-    <a href="#" onclick="goToSlots()" class="btn primary big">Zagraj teraz</a>
+    <a href="#" class="btn primary big go-slots">Zagraj teraz</a>
   </div>
 
   <div class="hero-image">
-    <img id="heroImg" src="static/assets/hero.jpg">
+    <img id="heroImg" src="/static/assets/hero.jpg" alt="Hero">
   </div>
 </section>
 
 <section class="categories">
-  <div class="card" onclick="goToSlots()">🎰<span>Slots</span></div>
-  <div class="card">🎡<span>Ruletka</span></div>
+  <div class="card go-slots">🎰<span>Slots</span></div>
+  <div class="card">🎲<span>Ruletka</span></div>
 </section>
 
 <footer>
-  © 2026 OrientCasino · 18+
+  © 2026 Orient Casino · 18+
 </footer>
 
-<script src="static/js/main.js"></script>
-
-<script>
-function goToSlots() {
-  const username = localStorage.getItem("username");
-  window.location.href = username ? "slots_game.html" : "login.html";
-}
-
-const username = localStorage.getItem("username");
-const authBox = document.getElementById("authBox");
-
-if (username) {
-  authBox.innerHTML = `
-    <span>👤 ${username}</span>
-    <button class="btn ghost" onclick="logout()">Wyloguj</button>
-  `;
-}
-
-function logout() {
-  localStorage.removeItem("username");
-  localStorage.removeItem("player_id");
-  window.location.reload();
-}
-</script>
+<script src="/static/js/main.js"></script>
 
 </body>
 </html>

@@ -1,5 +1,6 @@
 from flask import request, jsonify, Blueprint
-from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, add_history, get_history, get_player_by_id, player_exists_by_id,verify_login
+from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, add_history, get_history, get_player_by_id, player_exists_by_id, clear_player_history
+from backend.auth import verify_login
 import random
 
 
@@ -115,18 +116,12 @@ def balance():
         return jsonify({"success": False, "message": "MISSING_USERNAME"}), 400
 
     if not player_exists(username):
-        return jsonify({
-            "success": False,
-            "message": "PLAYER_NOT_FOUND"
-        }), 404
+        return jsonify({"success": False, "message": "PLAYER_NOT_FOUND"}), 404
 
-    user_data = get_player(username)
-    balance = user_data.get("balance")
+    player = get_player(username)
+    balance = player.get("balance", 0)
 
-    return jsonify({
-        "success": True,
-        "balance": balance
-    }), 200
+    return jsonify({"success": True, "balance": balance}), 200
 
 @routes.route("/history", methods=["GET"])
 def history():
@@ -155,6 +150,10 @@ def history():
 @routes.route("/slots", methods=["POST"])
 def slots():
     data = request.json
+    symbols = [1, 2, 3, 4]
+    weights = [50, 30, 15, 5]
+    win_chance = 0.25
+    minimal_bet = 10
 
     if not data:
         return jsonify({"success": False, "message": "INVALID_REQUEST"}), 400
@@ -173,19 +172,34 @@ def slots():
     if balance == -1:
         return jsonify({"success": False, "message": "INVALID_BALANCE"}), 400
 
-    if not isinstance(bet, (int, float)) or bet <= 0 or bet > balance:
+    if not isinstance(bet, (int, float)) or bet > balance or bet < minimal_bet:
         return jsonify({"success": False, "message": "INVALID_BET"}), 400
 
-    result = [random.randint(1, 4) for i in range(3)]
+    if bet != round(bet, 2):
+        return jsonify({"success": False, "message": "TOO_MANY_DECIMALS"}), 400
 
-    if result[0] == result[1] == result[2]:
-        multipliers = {1: 2, 2: 3, 3: 4, 4: 5}
-        win = multipliers[result[0]] * bet
+    if random.random() < win_chance:
+        symbol = random.choices(symbols, weights=weights, k=1)[0]
+        result = [symbol, symbol, symbol]
+
+        multipliers = {
+            1: 1.2,
+            2: 2,
+            3: 4,
+            4: 10
+        }
+
+        win = multipliers[symbol] * bet
+
     else:
+        result = random.choices(symbols, weights=weights, k=3)
+
+        while result[0] == result[1] == result[2]:
+            result = random.choices(symbols, weights=weights, k=3)
+
         win = 0
 
     result_amount = win - bet
-
     change_balance(username, result_amount)
 
     player = get_player(username)
@@ -198,3 +212,32 @@ def slots():
         return jsonify({"success": False, "message": history_res["message"]}), 500
 
     return jsonify({"success": True, "result": result, "win": win, "balance": balance}), 200
+
+@routes.route("/history/clear", methods=["POST"])
+def clear_history():
+    data = request.json
+
+    if not data:
+        return jsonify({"success": False, "message": "INVALID_REQUEST"}), 400
+    
+    username = data.get("username", "").strip()
+
+    if not isinstance(username, str) or not username:
+        return jsonify({"success": False, "message": "INVALID_USERNAME"}), 400
+
+    player = get_player(username)
+
+    if not player:
+        return jsonify({"success": False, "message": "PLAYER_NOT_FOUND"}), 404
+
+    player_id = player.get("player_id")
+
+    if player_id is None:
+        return jsonify({"success": False, "message": "INVALID_PLAYER_ID"}), 404
+
+    res = clear_player_history(player_id)
+
+    if not res["success"]:
+        return jsonify({"success": False, "message": res["message"]}), 500
+
+    return jsonify({"success": True, "message": res["message"]}), 200
