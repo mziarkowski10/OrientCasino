@@ -311,3 +311,36 @@ input[type="number"] {
     align-items: flex-start;
   }
 }
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 45px; /* miejsce na ikonę */
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 0;
+  bottom: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.eye {
+  width: 22px;
+  height: 22px;
+
+  stroke: #cfcfcf;
+  fill: none;
+  stroke-width: 2;
+}

@@ -1,4 +1,4 @@
-from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, clear_players, clear_history, add_history, get_history, get_player_by_id, player_exists_by_id
+from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, add_history, get_history, get_player_by_id, player_exists_by_id, clear_player_history
 import os
 import sqlite3
 import pytest

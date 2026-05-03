@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Historia - Orient Casino</title>
+  <title>History - Orient Casino</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="/static/css/style.css">
@@ -19,18 +19,17 @@
   </nav>
 
   <div class="auth" id="authBox">
-    <span id="balanceDisplay">Saldo: ...</span>
-    <a class="btn ghost login-link" href="login.html">Zaloguj</a>
-    <a class="btn primary login-link" href="login.html?mode=register">Rejestracja</a>
+    <a class="btn ghost login-link" href="login.html">Log in</a>
+    <a class="btn primary login-link" href="login.html?mode=register">Sign up</a>
   </div>
 </header>
 
 <section class="history-container">
   <div class="history-header">
-    <h1>Historia gier</h1>
+    <h1>Game history</h1>
 
     <button id="clearHistoryBtn" class="btn ghost">
-      Wyczyść historię
+      Clear History
     </button>
   </div>
 
@@ -38,18 +37,18 @@
     <table class="history-table">
       <thead>
         <tr>
-          <th>Gra</th>
+          <th>Game</th>
           <th>Bet</th>
-          <th>Wynik</th>
-          <th>Wygrana</th>
-          <th>Saldo</th>
-          <th>Czas</th>
+          <th>Result</th>
+          <th>Win</th>
+          <th>Balance</th>
+          <th>Date</th>
         </tr>
       </thead>
 
       <tbody id="historyBody">
         <tr>
-          <td colspan="6" class="history-empty">⏳ Ładowanie...</td>
+          <td colspan="6" class="history-empty">⏳ Loading...</td>
         </tr>
       </tbody>
     </table>

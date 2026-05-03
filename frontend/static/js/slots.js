@@ -105,14 +105,14 @@ spinBtn.onclick = async () => {
     const data = await res.json();
 
     if (!data.success) {
-      resultText.textContent = data.message || "Błąd";
+      resultText.textContent = data.message || "Error";
       resultText.className = "result lose-text";
       resetUI();
       return;
     }
 
     if (!Array.isArray(data.result)) {
-      resultText.textContent = "Błąd danych";
+      resultText.textContent = "Data error";
       resultText.className = "result lose-text";
       resetUI();
       return;
@@ -126,21 +126,21 @@ spinBtn.onclick = async () => {
 
     setTimeout(() => {
       if (data.win > 0) {
-        resultText.textContent = "WYGRANA: " + data.win;
+        resultText.textContent = "WIN: " + data.win;
         resultText.className = "result win-text";
 
         try {
           winSound.play();
         } catch {}
       } else {
-        resultText.textContent = "Przegrana";
+        resultText.textContent = "Loss";
         resultText.className = "result lose-text";
       }
 
       const balanceEl = document.getElementById("balanceDisplay");
 
       if (balanceEl && typeof data.balance !== "undefined") {
-        balanceEl.textContent = "Saldo: " + data.balance;
+        balanceEl.textContent = "Balance: ${data.balance}$";
       }
 
       resetUI();
@@ -148,7 +148,7 @@ spinBtn.onclick = async () => {
 
   } catch (err) {
     console.error(err);
-    resultText.textContent = "Błąd połączenia";
+    resultText.textContent = "Connection error";
     resultText.className = "result lose-text";
     resetUI();
   }

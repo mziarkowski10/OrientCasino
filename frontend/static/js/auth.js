@@ -39,24 +39,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (!data.success) {
-        alert(data.message || "Błąd logowania");
+        alert(data.message || "Login error");
         return;
       }
 
       localStorage.setItem("username", username);
       localStorage.setItem("player_id", data.player_id);
 
-      const redirect = localStorage.getItem("redirectAfterLogin");
-
-      if (redirect && !redirect.includes("login")) {
-        localStorage.removeItem("redirectAfterLogin");
-        window.location.href = redirect;
-      } else {
-        window.location.href = "index.html";
-      }
+      window.location.href = "index.html";
 
     } catch {
-      alert("Brak połączenia z serwerem");
+      alert("No connection to the server");
     }
   };
 
@@ -69,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const password2 = regPassword2.value;
 
     if (password !== password2) {
-      alert("Hasła się nie zgadzają!");
+      alert("Passwords do not match!");
       return;
     }
 
@@ -83,16 +76,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (!data.success) {
-        alert(data.message || "Błąd rejestracji");
+        alert(data.message || "Sign up error");
         return;
       }
 
-      alert("Konto utworzone!");
+      alert("Account created!");
       registerForm.classList.add('hidden');
       loginForm.classList.remove('hidden');
 
     } catch {
-      alert("Brak połączenia z serwerem");
+      alert("No connection to the server");
     }
   };
 
@@ -102,9 +95,28 @@ document.addEventListener("DOMContentLoaded", () => {
   if (mode === "register") {
     registerForm.classList.remove("hidden");
     loginForm.classList.add("hidden");
-  } else {
-    loginForm.classList.remove("hidden");
-    registerForm.classList.add("hidden");
   }
 
+  setupPasswordToggle();
 });
+
+function setupPasswordToggle() {
+  document.querySelectorAll(".toggle-password").forEach(wrapper => {
+
+    const input = document.getElementById(wrapper.dataset.target);
+    const openEye = wrapper.querySelector(".open");
+    const closedEye = wrapper.querySelector(".closed");
+
+    wrapper.addEventListener("click", () => {
+      if (!input) return;
+
+      const isHidden = input.type === "password";
+
+      input.type = isHidden ? "text" : "password";
+
+      openEye.classList.toggle("hidden", isHidden);
+      closedEye.classList.toggle("hidden", !isHidden);
+    });
+
+  });
+}

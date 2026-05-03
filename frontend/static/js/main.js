@@ -25,14 +25,13 @@ function setupAuthBox() {
   if (username) {
     authBox.innerHTML = `
       <span>👤 ${username}</span>
-      <span id="balanceDisplay">Saldo: ...</span>
-      <button class="btn ghost logout-btn">Wyloguj</button>
+      <span id="balanceDisplay">Balance: ...</span>
+      <button class="btn ghost logout-btn">Log out</button>
     `;
   } else {
     authBox.innerHTML = `
-      <span id="balanceDisplay">Saldo: ...</span>
-      <a class="btn ghost login-link" href="login.html">Zaloguj</a>
-      <a class="btn primary login-link" href="login.html?mode=register">Rejestracja</a>
+      <a class="btn ghost login-link" href="login.html">Log in</a>
+      <a class="btn primary login-link" href="login.html?mode=register">Sign up</a>
     `;
   }
 
@@ -68,7 +67,7 @@ async function loadBalance() {
     if (data.success) {
       const el = document.getElementById("balanceDisplay");
       if (el) {
-        el.textContent = `Saldo: ${data.balance}`;
+        el.textContent = `Balance: ${data.balance}$`;
       }
     }
 

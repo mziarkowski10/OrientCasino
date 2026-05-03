@@ -15,7 +15,7 @@ async function loadHistory() {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="history-empty">
-          Zaloguj się, aby zobaczyć historię
+          Log in to view history
         </td>
       </tr>
     `;
@@ -29,7 +29,7 @@ async function loadHistory() {
     if (!data.success) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="history-empty">Błąd ładowania</td>
+          <td colspan="6" class="history-empty">Loading error</td>
         </tr>
       `;
       return;
@@ -38,7 +38,7 @@ async function loadHistory() {
     if (!Array.isArray(data.history) || data.history.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="history-empty">Brak historii</td>
+          <td colspan="6" class="history-empty">No history</td>
         </tr>
       `;
       return;
@@ -66,10 +66,10 @@ async function loadHistory() {
 
       tr.innerHTML = `
         <td>${item.game || "-"}</td>
-        <td>${item.bet ?? "-"}</td>
+        <td>${item.bet ?? "-"}$</td>
         <td>${resultSymbols}</td>
-        <td>${item.win > 0 ? "+" + item.win : item.win}</td>
-        <td>${item.final_balance ?? "-"}</td>
+        <td>${item.win > 0 ? "+" + item.win : item.win}$</td>
+        <td>${item.final_balance ?? "-"}$</td>
         <td>${time}</td>
       `;
 
@@ -82,7 +82,7 @@ async function loadHistory() {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="history-empty">
-          Błąd połączenia z serwerem
+          Server connection error
         </td>
       </tr>
     `;
@@ -93,7 +93,7 @@ async function clearHistory() {
   const username = localStorage.getItem("username");
   if (!username) return;
 
-  const confirmDelete = confirm("Na pewno chcesz usunąć historię?");
+  const confirmDelete = confirm("Are you sure you want to delete your history");
   if (!confirmDelete) return;
 
   try {
@@ -106,7 +106,7 @@ async function clearHistory() {
     const data = await res.json();
 
     if (!data.success) {
-      alert(data.message || "Błąd usuwania historii");
+      alert(data.message || "Error deleting history");
       return;
     }
 
@@ -114,7 +114,7 @@ async function clearHistory() {
 
   } catch (err) {
     console.error(err);
-    alert("Błąd połączenia z serwerem");
+    alert("Server connection error");
   }
 }
 
