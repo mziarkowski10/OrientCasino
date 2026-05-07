@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("username", username);
       localStorage.setItem("player_id", data.player_id);
 
-      window.location.href = "index.html";
+      window.location.href = "/";
 
     } catch {
       alert("No connection to the server");
@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setupPasswordToggle();
 });
+
 
 function setupPasswordToggle() {
   document.querySelectorAll(".toggle-password").forEach(wrapper => {

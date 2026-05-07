@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadBalance();
 });
 
+
 function initHero() {
   const img = document.getElementById("heroImg");
   if (!img) return;
@@ -17,12 +18,13 @@ function initHero() {
 }
 
 function setupAuthBox() {
+  const playerId = localStorage.getItem("player_id");
   const username = localStorage.getItem("username");
   const authBox = document.getElementById("authBox");
 
   if (!authBox) return;
 
-  if (username) {
+  if (playerId && username) {
     authBox.innerHTML = `
       <span>👤 ${username}</span>
       <span id="balanceDisplay">Balance: ...</span>
@@ -30,14 +32,15 @@ function setupAuthBox() {
     `;
   } else {
     authBox.innerHTML = `
-      <a class="btn ghost login-link" href="login.html">Log in</a>
-      <a class="btn primary login-link" href="login.html?mode=register">Sign up</a>
+      <a class="btn ghost login-link" href="/login-page">Log in</a>
+      <a class="btn primary login-link" href="/login-page?mode=register">Sign up</a>
     `;
   }
 
   bindLogout();
   setupLoginRedirect();
 }
+
 
 function bindLogout() {
   const btn = document.querySelector(".logout-btn");
@@ -52,14 +55,14 @@ function bindLogout() {
 }
 
 async function loadBalance() {
-  const username = localStorage.getItem("username");
-  if (!username) return;
+  const playerId = localStorage.getItem("player_id");
+  if (!playerId) return;
 
   try {
     const res = await fetch("/balance", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username })
+      body: JSON.stringify({ player_id: parseInt(playerId) })
     });
 
     const data = await res.json();
@@ -77,14 +80,15 @@ async function loadBalance() {
 }
 
 function goToSlots() {
-  const username = localStorage.getItem("username");
+  const playerId = localStorage.getItem("player_id");
 
-  if (username) {
-    window.location.href = "slots_game.html";
+  if (playerId) {
+    window.location.href = "/slots";
   } else {
-    window.location.href = "login.html";
+    window.location.href = "/login-page";
   }
 }
+
 
 function bindNavigation() {
   document.querySelectorAll(".go-slots").forEach(el => {
@@ -94,6 +98,7 @@ function bindNavigation() {
     });
   });
 }
+
 
 function setupLoginRedirect() {
   document.querySelectorAll(".login-link").forEach(link => {

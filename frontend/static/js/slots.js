@@ -1,6 +1,6 @@
-const username = localStorage.getItem("username");
+const playerId = localStorage.getItem("player_id");
 
-if (!username) window.location.href = "login.html";
+if (!playerId) window.location.href = "login.html";
 
 const spinSound = new Audio("/static/assets/spin.mp3");
 const winSound = new Audio("/static/assets/win.mp3");
@@ -97,7 +97,7 @@ spinBtn.onclick = async () => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username,
+        player_id: parseInt(playerId),
         bet
       })
     });
@@ -140,7 +140,7 @@ spinBtn.onclick = async () => {
       const balanceEl = document.getElementById("balanceDisplay");
 
       if (balanceEl && typeof data.balance !== "undefined") {
-        balanceEl.textContent = "Balance: ${data.balance}$";
+        balanceEl.textContent = `Balance: ${data.balance}$`;
       }
 
       resetUI();

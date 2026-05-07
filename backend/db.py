@@ -2,39 +2,50 @@ import sqlite3
 import json
 
 
+# Db connection
+
 def connect_db():
     con = sqlite3.connect("backend/instance/casino.db")
     cur = con.cursor()
     return con, cur
 
+# Init db
+
 def create_db():
     con, cur = connect_db()
 
-    # PLAYER TABLE
-    cur.execute('''CREATE TABLE IF NOT EXISTS player(
-        id INTEGER PRIMARY KEY,
-        username TEXT UNIQUE NOT NULL,
-        email TEXT,
-        password TEXT NOT NULL,
-        balance REAL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )''')
+    cur.execute("PRAGMA foreign_keys = ON")
 
-    # HISTORY TABLE
-    cur.execute('''CREATE TABLE IF NOT EXISTS history(
-        id INTEGER PRIMARY KEY,
-        player_id INTEGER NOT NULL,
-        game TEXT NOT NULL,
-        result TEXT,
-        bet REAL NOT NULL,
-        win REAL NOT NULL,
-        result_amount REAL NOT NULL,
-        final_balance REAL NOT NULL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )''')
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS player(
+            id INTEGER PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT,
+            password TEXT NOT NULL,
+            balance REAL NOT NULL DEFAULT 1000,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS history(
+            id INTEGER PRIMARY KEY,
+            player_id INTEGER NOT NULL,
+            game TEXT NOT NULL,
+            result TEXT,
+            bet REAL NOT NULL,
+            win REAL NOT NULL,
+            result_amount REAL NOT NULL,
+            final_balance REAL NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(player_id) REFERENCES player(id) ON DELETE CASCADE
+        )
+    """)
 
     con.commit()
     con.close()
+
+# Player checks
 
 def player_exists_by_id(player_id):
     con, cur = connect_db()
@@ -43,122 +54,70 @@ def player_exists_by_id(player_id):
     con.close()
     return res is not None
 
-def player_exists(username):
+def player_exists_by_username(username):
     con, cur = connect_db()
     cur.execute("SELECT 1 FROM player WHERE username = ?", (username,))
     res = cur.fetchone()
     con.close()
     return res is not None
 
+# Player
+
 def add_player(username, email, password, balance=1000):
-    if player_exists(username):
+    if player_exists_by_username(username):
         return {
             "success": False,
-            "message": "Player already exists"
+            "message": "PLAYER_ALREADY_EXISTS"
         }
 
     con, cur = connect_db()
+
     cur.execute(
         "INSERT INTO player(username, email, password, balance) VALUES(?, ?, ?, ?)",
         (username, email, password, balance)
     )
+
     con.commit()
+
     cur.execute("SELECT id FROM player WHERE username = ?", (username,))
     player_id = cur.fetchone()[0]
+
     con.close()
 
     return {
         "success": True,
-        "message": "Player created successfully",
+        "message": "PLAYER_CREATED",
         "player_id": player_id
-    }
-
-def get_player(username):
-    con, cur = connect_db()
-    cur.execute("SELECT * FROM player WHERE username = ?", (username,))
-    res = cur.fetchone()
-    con.close()
-
-    if not res:
-        return None
-
-    id, username, email, password, balance, created_at = res
-
-    return {
-        "player_id": id,
-        "username": username,
-        "email": email,
-        "password": password,
-        "balance": balance,
-        "created_at": created_at
-    }
-
-def change_balance(username, amount):
-    con, cur = connect_db()
-
-    cur.execute("SELECT balance FROM player WHERE username = ?", (username,))
-    res = cur.fetchone()
-
-    if not res:
-        con.close()
-        return {
-            "success": False,
-            "message": "Player not found",
-            "balance": 0
-        }
-
-    balance = res[0]
-
-    if not isinstance(amount, (int, float)):
-        con.close()
-        return {
-            "success": False,
-            "message": "Invalid amount",
-            "balance": balance
-        }
-
-    new_balance = balance + amount
-
-    if new_balance < 0:
-        con.close()
-        return {
-            "success": False,
-            "message": "Not enough balance",
-            "balance": balance
-        }
-
-    cur.execute("UPDATE player SET balance = ? WHERE username = ?", (new_balance, username))
-
-    con.commit()
-    con.close()
-
-    return {
-        "success": True,
-        "message": "Balance updated",
-        "balance": new_balance
     }
 
 def get_player_by_id(player_id):
     con, cur = connect_db()
 
-    cur.execute("SELECT * FROM player WHERE id = ?", (player_id,))
-    res = cur.fetchone()
+    cur.execute(
+        "SELECT id, username, email, balance, created_at FROM player WHERE id = ?",
+        (player_id,)
+    )
 
+    res = cur.fetchone()
     con.close()
 
     if not res:
         return None
 
-    id, username, email, password, balance, created_at = res
-
     return {
-        "player_id": id,
-        "username": username,
-        "email": email,
-        "password": password,
-        "balance": balance,
-        "created_at": created_at
+        "player_id": res[0],
+        "username": res[1],
+        "email": res[2],
+        "balance": res[3],
+        "created_at": res[4]
     }
+
+def get_player_by_username(username):
+    con, cur = connect_db()
+    cur.execute("SELECT id, username, email, password, balance, created_at FROM player WHERE username = ?", (username,))
+    res = cur.fetchone()
+    con.close()
+    return res
 
 def clear_players():
     con, cur = connect_db()
@@ -166,55 +125,137 @@ def clear_players():
     con.commit()
     con.close()
 
-def add_history(player_id, game, result, bet, win, result_amount, final_balance):
+#Balance
+
+def change_balance(player_id, amount):
+    if not isinstance(player_id, int):
+        return {"success": False, "message": "INVALID_PLAYER_ID"}
+
+    if not isinstance(amount, (int, float)):
+        return {"success": False, "message": "INVALID_AMOUNT"}
+
     con, cur = connect_db()
 
-    if not isinstance(player_id, int) or not isinstance(game, str) or not isinstance(result, list) or not isinstance(bet, (int, float)) or not isinstance(win, (int, float)) or not isinstance(result_amount, (int, float)) or not isinstance(final_balance, (int, float)) or not game.strip():
-        con.close()
+    try:
+        cur.execute("""
+            UPDATE player
+            SET balance = balance + ?
+            WHERE id = ? AND balance + ? >= 0
+            RETURNING balance
+        """, (amount, player_id, amount))
+
+        res = cur.fetchone()
+
+        if not res:
+            con.rollback()
+            return {
+                "success": False,
+                "message": "INSUFFICIENT_FUNDS_OR_PLAYER_NOT_FOUND"
+            }
+
+        con.commit()
+
         return {
-            "success": False,
-            "message": "Invalid values"
+            "success": True,
+            "message": "BALANCE_UPDATED",
+            "balance": res[0]
         }
 
-    cur.execute(
-        "INSERT INTO history(player_id, game, result, bet, win, result_amount, final_balance) VALUES(?, ?, ?, ?, ?, ?, ?)",
-        (player_id, game, json.dumps(result), bet, win, result_amount, final_balance)
-    )
+    finally:
+        con.close()
 
-    con.commit()
-    con.close()
+# History
 
-    return {
-        "success": True,
-        "message": "History added"
-    }
+def add_history(player_id, game, result, bet, win, result_amount, final_balance):
+    if not isinstance(player_id, int):
+        return {"success": False, "message": "INVALID_PLAYER_ID"}
+
+    if not isinstance(game, str) or not game.strip():
+        return {"success": False, "message": "INVALID_GAME"}
+
+    if not isinstance(result, (list, dict)):
+        return {"success": False, "message": "INVALID_RESULT"}
+
+    if not all(isinstance(x, (int, float)) for x in [bet, win, result_amount, final_balance]):
+        return {"success": False, "message": "INVALID_NUMERIC_VALUES"}
+
+    con, cur = connect_db()
+
+    try:
+        cur.execute("""
+            INSERT INTO history(player_id, game, result, bet, win, result_amount, final_balance)
+            VALUES(?, ?, ?, ?, ?, ?, ?)
+        """, (
+            player_id,
+            game,
+            json.dumps(result),
+            bet,
+            win,
+            result_amount,
+            final_balance
+        ))
+
+        con.commit()
+
+        return {
+            "success": True,
+            "message": "HISTORY_ADDED"
+        }
+
+    except Exception:
+        con.rollback()
+        return {
+            "success": False,
+            "message": "DB_ERROR"
+        }
+
+    finally:
+        con.close()
 
 def get_history(player_id):
+    if not isinstance(player_id, int):
+        return {"success": False, "message": "INVALID_PLAYER_ID"}
+
     con, cur = connect_db()
-    cur.execute("SELECT * FROM history WHERE player_id = ? ORDER BY timestamp DESC", (player_id,))
-    rows = cur.fetchall()
-    con.close()
 
-    result_history = []
+    try:
+        cur.execute("""
+            SELECT id, player_id, game, result, bet, win, result_amount, final_balance, timestamp
+            FROM history
+            WHERE player_id = ?
+            ORDER BY timestamp DESC
+            LIMIT 100
+        """, (player_id,))
 
-    for row in rows:
-        history_id, pid, game, result, bet, win, result_amount, final_balance, timestamp = row
-        result_history.append({
-            "id": history_id,
-            "player_id": pid,
-            "game": game,
-            "result": json.loads(result),
-            "bet": bet,
-            "win": win,
-            "result_amount": result_amount,
-            "final_balance": final_balance,
-            "timestamp": timestamp
-        })
+        rows = cur.fetchall()
 
-    return {
-        "success": True,
-        "history": result_history
-    }
+        history = []
+
+        for row in rows:
+            try:
+                result_parsed = json.loads(row[3])
+            except:
+                result_parsed = []
+
+            history.append({
+                "id": row[0],
+                "player_id": row[1],
+                "game": row[2],
+                "result": result_parsed,
+                "bet": row[4],
+                "win": row[5],
+                "result_amount": row[6],
+                "final_balance": row[7],
+                "timestamp": row[8]
+            })
+
+        return {
+            "success": True,
+            "history": history
+        }
+
+    finally:
+        con.close()
 
 def clear_history():
     con, cur = connect_db()
@@ -223,17 +264,26 @@ def clear_history():
     con.close()
 
 def clear_player_history(player_id):
-    try:
-        player_id = int(player_id)
-    except:
-        return {"success": False, "message": "Player_id is not integer"}
-
-    if not player_exists_by_id(player_id):
-        return {"success": False, "message": "Player does not exist"}
+    if not isinstance(player_id, int):
+        return {"success": False, "message": "INVALID_PLAYER_ID"}
 
     con, cur = connect_db()
-    cur.execute("DELETE FROM history WHERE player_id = ?", (player_id,))
-    con.commit()
-    con.close()
 
-    return {"success": True, "message": "History removed"}
+    try:
+        cur.execute("DELETE FROM history WHERE player_id = ?", (player_id,))
+        con.commit()
+
+        return {
+            "success": True,
+            "message": "HISTORY_CLEARED"
+        }
+
+    except:
+        con.rollback()
+        return {
+            "success": False,
+            "message": "DB_ERROR"
+        }
+
+    finally:
+        con.close()

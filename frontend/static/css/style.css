@@ -6,8 +6,16 @@
 }
 
 body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
   background: radial-gradient(circle at top, #2a0055, #0b0218);
   color: #fff;
+}
+
+main {
+  flex: 1;
 }
 
 .topbar {
@@ -288,9 +296,11 @@ nav a:hover {
 }
 
 footer {
+  margin-top: auto;
   text-align: center;
-  padding: 30px;
-  color: #777;
+  padding: 20px 10px;
+  opacity: 0.7;
+  font-size: 14px;
 }
 
 input[type="number"]::-webkit-outer-spin-button,

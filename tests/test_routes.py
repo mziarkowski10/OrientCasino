@@ -1,10 +1,10 @@
-from backend.db import connect_db, create_db, add_player, player_exists, get_player, change_balance, add_history, get_history, get_player_by_id, player_exists_by_id, clear_player_history
+from backend.db import connect_db, create_db, add_player, player_exists_by_id, player_exists_by_username, get_player_by_id, get_player_by_username, change_balance, add_history, get_history, clear_player_history
 from backend.routes import register, login, update_balance, balance, history, slots, clear_history
 import pytest
 import os
 import sqlite3
-from backend.app import app
 from flask_cors import CORS
+from backend.app import app
 
 
 @pytest.fixture

@@ -9,9 +9,9 @@ async function loadHistory() {
   const tbody = document.getElementById("historyBody");
   if (!tbody) return;
 
-  const username = localStorage.getItem("username");
+  const playerId = localStorage.getItem("player_id");
 
-  if (!username) {
+  if (!playerId) {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="history-empty">
@@ -23,7 +23,7 @@ async function loadHistory() {
   }
 
   try {
-    const res = await fetch(`/history?username=${encodeURIComponent(username)}`);
+    const res = await fetch(`/api/history?player_id=${encodeURIComponent(playerId)}`);
     const data = await res.json();
 
     if (!data.success) {
@@ -90,8 +90,8 @@ async function loadHistory() {
 }
 
 async function clearHistory() {
-  const username = localStorage.getItem("username");
-  if (!username) return;
+  const playerId = localStorage.getItem("player_id");
+  if (!playerId) return;
 
   const confirmDelete = confirm("Are you sure you want to delete your history");
   if (!confirmDelete) return;
@@ -100,7 +100,7 @@ async function clearHistory() {
     const res = await fetch("/history/clear", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username })
+      body: JSON.stringify({ player_id: parseInt(playerId) })
     });
 
     const data = await res.json();
